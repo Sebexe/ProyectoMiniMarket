@@ -30,6 +30,7 @@ public class Principal extends Application {
         primaryStage.setMinWidth(1200);
 
         Almacen almacen_principal = cargarAlmacen();
+        ObservableList<Producto> productosObservableList = FXCollections.observableArrayList(almacen_principal.listarProductos());
 
         VBox stock_stack = new VBox();
         stock_stack.setSpacing(50);
@@ -50,7 +51,7 @@ public class Principal extends Application {
         stockMinimoColumn.setCellValueFactory(new PropertyValueFactory<>("stock_minimo"));stockMinimoColumn.setPrefWidth(100);
 
         tabla.getColumns().addAll(codigoColumn, descripcionColumn, precioColumn, stockActualColumn, stockMinimoColumn);
-
+        tabla.setItems(productosObservableList);
 
 
         HBox formularios = new HBox();
@@ -72,6 +73,47 @@ public class Principal extends Application {
         TextField stock_minimo = new TextField();
         stock_minimo.setPromptText("Stock minimo");
 
+        HBox formularios_modificar = new HBox();
+        formularios_modificar.getStyleClass().add("formulario");
+        formularios_modificar.setSpacing(30);
+
+        TextField codigo_modificar = new TextField();
+        codigo_modificar.setPromptText("Codigo de producto");
+
+        TextField existencias_agregar = new TextField();
+        existencias_agregar.setPromptText("Existencias a agregar");
+        Button boton_agregar_existencias = new Button("Agregar existencias");
+        boton_agregar_existencias.setOnAction(actionEvent -> {
+            int codigo_producto = Integer.parseInt(codigo_modificar.getText());
+            if (almacen_principal.estaProducto(codigo_producto)){
+                int nuevo_ingreso = Integer.parseInt(existencias_agregar.getText());
+                almacen_principal.agregarExistencias(codigo_producto,nuevo_ingreso);
+                codigo_modificar.clear();
+                existencias_agregar.clear();
+                guardarAlmacen(almacen_principal);
+                productosObservableList.setAll(almacen_principal.listarProductos());
+            }
+            else {
+                System.out.println("El producto no esta en el almacen.");
+            }
+        });
+        Button boton_eliminar_producto = new Button("Eliminar Producto");
+        boton_eliminar_producto.setOnAction(actionEvent -> {
+            int codigo_producto = Integer.parseInt(codigo_modificar.getText());
+            if (almacen_principal.estaProducto(codigo_producto)){
+                almacen_principal.sacarProducto(codigo_producto);
+                guardarAlmacen(almacen_principal);
+                productosObservableList.setAll(almacen_principal.listarProductos());
+            }
+            else {
+                System.out.println("El producto no esta en el almacen.");
+            }
+        });
+
+        formularios_modificar.getChildren().addAll(codigo_modificar,existencias_agregar,boton_agregar_existencias,boton_eliminar_producto);
+
+
+
         Button boton_agregar = new Button("Agregar Producto");
         boton_agregar.setOnAction(actionEvent -> {
             almacen_principal.agregarProducto(Integer.parseInt(codigo.getText()),descripcion.getText(),Integer.parseInt(precio_unitario.getText()),Integer.parseInt(stock_actual.getText()),Integer.parseInt(stock_minimo.getText()));
@@ -81,21 +123,21 @@ public class Principal extends Application {
             stock_actual.clear();
             stock_minimo.clear();
             guardarAlmacen(almacen_principal);
+            productosObservableList.setAll(almacen_principal.listarProductos());
         });
-        Button boton_imprimir = new Button("Imprimir Productos");
+        Button boton_imprimir = new Button("Actualizar Productos");
         boton_imprimir.setOnAction(actionEvent -> {
             ArrayList<Producto> listado_productos = almacen_principal.listarProductos();
             for (Producto p : listado_productos){
                 System.out.println("Codigo " + p.getCodigo() + " Descripcion:" + p.getDescripcion() + " Precio Unitario: " + p.getPrecio_unitario() + " Stock Actual: " + p.getStock_actual() + " Stock minimo: " + p.getStock_minimo());
             }
-            ObservableList<Producto> productosObservableList = FXCollections.observableArrayList(listado_productos);
-            tabla.setItems(productosObservableList);
+
 
         });
 
         formularios.getChildren().addAll(codigo,descripcion,precio_unitario,stock_actual,stock_minimo,boton_agregar,boton_imprimir);
 
-        stock_stack.getChildren().addAll(formularios,tabla);
+        stock_stack.getChildren().addAll(formularios,formularios_modificar,tabla);
 
         Scene stock_scene = new Scene(stock_stack,1200,800);
 
