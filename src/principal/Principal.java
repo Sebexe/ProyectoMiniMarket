@@ -3,13 +3,11 @@ package principal;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -31,7 +29,7 @@ public class Principal extends Application {
         primaryStage.setMinHeight(800);
         primaryStage.setMinWidth(1200);
 
-        Almacen almacen_principal = new Almacen();
+        Almacen almacen_principal = cargarAlmacen();
 
         VBox stock_stack = new VBox();
         stock_stack.setSpacing(50);
@@ -82,6 +80,7 @@ public class Principal extends Application {
             precio_unitario.clear();
             stock_actual.clear();
             stock_minimo.clear();
+            guardarAlmacen(almacen_principal);
         });
         Button boton_imprimir = new Button("Imprimir Productos");
         boton_imprimir.setOnAction(actionEvent -> {
@@ -154,6 +153,22 @@ public class Principal extends Application {
 
 
 
+    }
+
+    private Almacen cargarAlmacen() {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("datos.dat"))) {
+            return (Almacen) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            return new Almacen(); // Si ocurre un error, devuelve una lista vacía
+        }
+    }
+
+    private void guardarAlmacen(Almacen almacen) {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("datos.dat"))) {
+            outputStream.writeObject(almacen);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
