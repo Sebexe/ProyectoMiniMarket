@@ -2,20 +2,34 @@
     -fx-background-color: #00b4d8;
 }
 .panel2 {
-    -fx-background-color: #48cae4;
+    -fx-background-color: #ffffff;
 }
 
 .boton {
-    -fx-background-color: #ffffff;
-    -fx-font-size: 28px;
-    -fx-font-family: "Times New Roman";
-    -fx-border-color: white;
-    -fx-border-radius: 2px;
-    -fx-border-style: solid;
+    -fx-font-size: 24px;
+    -fx-text-fill: black;
+    -fx-background-color: #bde0fe;
+    -fx-font-family: "Segoe UI";
+}
+
+
+.boton_mini {
+    -fx-font-size: 16px;
+    -fx-text-fill: black;
+    -fx-background-color: #bde0fe;
+    -fx-font-family: "Segoe UI";
 }
 
 .boton:hover{
-    -fx-background-color: #ade8f4;
+    -fx-border-color: #3a86ff;
+    -fx-border-style: solid;
+    -fx-border-radius: 3px;
+}
+
+.boton_mini:hover{
+    -fx-border-color: #3a86ff;
+    -fx-border-style: solid;
+    -fx-border-radius: 1px;
 }
 
 .formulario {

@@ -1,5 +1,8 @@
 package principal;
 
+import Ventas.AlmacenVentas;
+import Ventas.ProductoVenta;
+import Ventas.Venta;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,7 +18,7 @@ import productos.Almacen;
 import productos.Producto;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class Principal extends Application {
@@ -30,12 +33,123 @@ public class Principal extends Application {
         primaryStage.setMinWidth(1200);
 
         Almacen almacen_principal = cargarAlmacen();
+        AlmacenVentas almacen_ventas = cargarAlmacenVentas();
+        AtomicReference<Venta> venta_actual = new AtomicReference<>(new Venta());
         ObservableList<Producto> productosObservableList = FXCollections.observableArrayList(almacen_principal.listarProductos());
+        ObservableList<ProductoVenta> carritoObservableList = FXCollections.observableArrayList(venta_actual.get().getCarrito());
+        ObservableList<Venta> ventasObservableList = FXCollections.observableArrayList(almacen_ventas.recuperarVentas());
+
+
+        // Nueva Venta
+        HBox producto_form = new HBox();
+        TextField venta_codigo = new TextField();
+        TextField venta_cantidad = new TextField();
+        venta_codigo.setPromptText("Codigo de producto");
+        venta_cantidad.setPromptText("Cantidad");
+        Label precio_final = new Label("El precio final es: ");
+        Button boton_agregar_carrito = new Button("Agregar al carrito");
+        boton_agregar_carrito.getStyleClass().add("boton_mini");
+        boton_agregar_carrito.setOnAction(actionEvent -> {
+            int codigo_producto = Integer.parseInt(venta_codigo.getText());
+            if (almacen_principal.estaProducto(codigo_producto)) {
+                venta_actual.get().agregarCarrito(almacen_principal.buscarProducto(codigo_producto), Integer.parseInt(venta_cantidad.getText()));
+                carritoObservableList.setAll(venta_actual.get().getCarrito());
+                venta_codigo.clear();
+                venta_cantidad.clear();
+                precio_final.setText("El precio final es: " + venta_actual.get().getTotal());
+            }
+        });
+
+        producto_form.getChildren().addAll(venta_codigo,venta_cantidad,boton_agregar_carrito);
+        producto_form.setSpacing(15);
+
+
+        TableView<ProductoVenta> producto_tabla = new TableView<>();
+        TableColumn<ProductoVenta,Integer> codigo_ventaColumn = new TableColumn<>("Codigo");
+        TableColumn<ProductoVenta,String> descripcion_ventaColumn = new TableColumn<>("Descripcion");
+        TableColumn<ProductoVenta,Integer> precio_unitario_ventaColumn = new TableColumn<>("Precio Unitario");
+        TableColumn<ProductoVenta,Integer> cantidad_ventaColumn = new TableColumn<>("Cantidad");
+        TableColumn<ProductoVenta,Integer>  total_ventaColumn = new TableColumn<>("Total");
+        codigo_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("codigo"));
+        descripcion_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        precio_unitario_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("precio_unitario"));
+        cantidad_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
+        total_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
+        producto_tabla.setItems(carritoObservableList);
+        producto_tabla.getColumns().addAll(codigo_ventaColumn,descripcion_ventaColumn,precio_unitario_ventaColumn,cantidad_ventaColumn,total_ventaColumn);
+
+
+
+        VBox producto_box = new VBox(producto_form,producto_tabla,precio_final);
+        VBox cliente_form = new VBox();
+
+        TextField cuil_cliente = new TextField();
+        cuil_cliente.setPromptText("Cuil Cliente");
+        cuil_cliente.setMaxWidth(150);
+        Button finalizar_venta = new Button("Finalizar Venta");
+        finalizar_venta.getStyleClass().add("boton_mini");
+        cliente_form.getChildren().addAll(cuil_cliente, finalizar_venta);
+        cliente_form.setSpacing(30);
+        cliente_form.setAlignment(Pos.CENTER);
+
+
+
+        HBox venta_box = new HBox(producto_box,cliente_form);
+        Scene escena_venta = new Scene(venta_box,1200,800);
+        producto_box.prefWidthProperty().bind(escena_venta.widthProperty().multiply(0.65));
+        producto_tabla.prefWidthProperty().bind(producto_box.widthProperty());
+        cliente_form.prefWidthProperty().bind(escena_venta.widthProperty().multiply(0.35));
+        cliente_form.prefHeightProperty().bind(escena_venta.heightProperty().multiply(0.70));
+        producto_box.setSpacing(30);
+        finalizar_venta.setOnAction(actionEvent -> {
+            if (!cuil_cliente.getText().isEmpty()){
+                int cuil_cliente_venta = Integer.parseInt(cuil_cliente.getText());
+                venta_actual.get().setCuil_cliente(cuil_cliente_venta);
+                almacen_ventas.guardarVenta(venta_actual.get());
+                guardarAlmacenVentas(almacen_ventas);
+                venta_actual.set(new Venta());
+                carritoObservableList.setAll(venta_actual.get().getCarrito());
+                ventasObservableList.setAll(almacen_ventas.recuperarVentas());
+                cuil_cliente.clear();
+                precio_final.setText("El precio final es: " + venta_actual.get().getTotal());
+            }
+        });
+
+
+        // Historial de Ventas
+
+        VBox historial = new VBox();
+        TableView tabla_historial = new TableView<>();
+        TableColumn<Venta,Integer> codigo_hisColumn = new TableColumn<>("Codigo");
+        TableColumn<Venta,Integer> cuil_cliente_histColumn = new TableColumn<>("Cliente");
+        TableColumn<Venta,Integer> total_histColumn = new TableColumn<>("Total");
+        tabla_historial.getColumns().addAll(codigo_hisColumn,cuil_cliente_histColumn,total_histColumn);
+
+        codigo_hisColumn.setCellValueFactory(new PropertyValueFactory<>("numero_venta"));
+        cuil_cliente_histColumn.setCellValueFactory(new PropertyValueFactory<>("cuil_cliente"));
+        total_histColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
+
+        tabla_historial.setItems(ventasObservableList);
+        Button imprimirhistorial = new Button("Imprimir historial");
+        imprimirhistorial.setOnAction(actionEvent -> {
+            for (Venta ventita : almacen_ventas.recuperarVentas()){
+                System.out.println(ventita.getCuil_cliente());
+                System.out.println(ventita.getTotal());
+                System.out.println(ventita.getNumero_venta());
+            }
+        });
+
+        historial.getChildren().addAll(tabla_historial,imprimirhistorial);
+        Scene historia = new Scene(historial,1200,800);
+
+
+
+
+
+        // Administrar Stock.
 
         VBox stock_stack = new VBox();
         stock_stack.setSpacing(50);
-
-
 
         TableView<Producto> tabla = new TableView<>();
 
@@ -179,6 +293,9 @@ public class Principal extends Application {
         boton_venta.getStyleClass().add("boton");
         boton_venta.prefWidthProperty().bind(panel2.widthProperty().multiply(0.5));
         boton_venta.prefHeightProperty().bind(panel2.heightProperty().multiply(0.15));
+        boton_venta.setOnAction(actionEvent -> {
+            primaryStage.setScene(escena_venta);
+        });
 
 
         Button boton_stock = new Button("Administrar Stock");
@@ -193,6 +310,9 @@ public class Principal extends Application {
         boton_historial.getStyleClass().add("boton");
         boton_historial.prefWidthProperty().bind(panel2.widthProperty().multiply(0.5));
         boton_historial.prefHeightProperty().bind(panel2.heightProperty().multiply(0.15));
+        boton_historial.setOnAction(actionEvent -> {
+            primaryStage.setScene(historia);
+        });
 
         botones.getChildren().addAll(boton_venta,boton_stock,boton_historial);
         botones.setAlignment(Pos.CENTER);
@@ -203,6 +323,9 @@ public class Principal extends Application {
 
         Scene scene = new Scene(hbox, 1200, 800);
         scene.getStylesheets().add("stylesheet.css");
+        escena_venta.getStylesheets().add("stylesheet.css");
+        stock_scene.getStylesheets().add("stylesheet.css");
+        historia.getStylesheets().add("stylesheet.css");
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("Administrador");
@@ -211,6 +334,21 @@ public class Principal extends Application {
         boton_imprimir.setOnAction(actionEvent -> {
             primaryStage.setScene(scene);
         });
+        Button boton_menu = new Button("Volver al menu");
+        boton_menu.setOnAction(actionEvent -> {
+            primaryStage.setScene(scene);
+        });
+
+        Button boton_menu2 = new Button("Volver al menu");
+        boton_menu2.setOnAction(actionEvent -> {
+            primaryStage.setScene(scene);
+        });
+        boton_imprimir.getStyleClass().add("boton_mini");
+        boton_menu.getStyleClass().add("boton_mini");
+        boton_menu2.getStyleClass().add("boton_mini");
+        historial.getChildren().add(boton_menu2);
+
+        producto_form.getChildren().add(boton_menu);
 
 
 
@@ -226,6 +364,22 @@ public class Principal extends Application {
 
     private void guardarAlmacen(Almacen almacen) {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("datos.dat"))) {
+            outputStream.writeObject(almacen);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private AlmacenVentas cargarAlmacenVentas() {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("ventas.dat"))) {
+            return (AlmacenVentas) inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            return new AlmacenVentas(); // Si ocurre un error, devuelve una lista vacía
+        }
+    }
+
+    private void guardarAlmacenVentas(AlmacenVentas almacen) {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream("ventas.dat"))) {
             outputStream.writeObject(almacen);
         } catch (IOException e) {
             e.printStackTrace();
