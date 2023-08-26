@@ -36,6 +36,10 @@ public class Almacen implements Serializable {
     public boolean haySuficiente(int codigo, int cantidad) {
         return (almacenamiento.get(codigo).getStock_actual() - cantidad) > 0;
     }
+    public void calcularExistencias(int codigo) {
+        if (this.estaProducto(codigo))
+            almacenamiento.get(codigo).calcularEstado();
+    }
 
     public void sacarExistencias(int codigo,int cantidad) {
         almacenamiento.get(codigo).setStock_actual(almacenamiento.get(codigo).getStock_actual() - cantidad);

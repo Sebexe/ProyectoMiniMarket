@@ -8,6 +8,7 @@ public class Producto implements Serializable {
     int precio_unitario;
     int stock_actual;
     int stock_minimo;
+    String estado;
 
     public Producto(int codigo, String descripcion, int precio_unitario, int stock_actual, int stock_minimo) {
         this.codigo = codigo;
@@ -55,5 +56,16 @@ public class Producto implements Serializable {
 
     public void setStock_minimo(int stock_minimo) {
         this.stock_minimo = stock_minimo;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void calcularEstado() {
+        if (this.stock_actual < stock_minimo)
+            this.estado = "Rellenar";
+        else
+            this.estado = "En stock";
     }
 }

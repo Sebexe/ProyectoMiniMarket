@@ -44,13 +44,16 @@ public class Principal extends Application {
         TableColumn<Producto, Integer> precioColumn = new TableColumn<>("Precio Unitario");
         TableColumn<Producto, Integer> stockActualColumn = new TableColumn<>("Stock Actual");
         TableColumn<Producto, Integer> stockMinimoColumn = new TableColumn<>("Stock Mínimo");
+        TableColumn<Producto, String> estadoColumn = new TableColumn<>("Estado");
         codigoColumn.setCellValueFactory(new PropertyValueFactory<>("codigo"));codigoColumn.setPrefWidth(50);
         descripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));descripcionColumn.setPrefWidth(200);
         precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio_unitario"));precioColumn.setPrefWidth(100);
         stockActualColumn.setCellValueFactory(new PropertyValueFactory<>("stock_actual"));stockActualColumn.setPrefWidth(100);
         stockMinimoColumn.setCellValueFactory(new PropertyValueFactory<>("stock_minimo"));stockMinimoColumn.setPrefWidth(100);
+        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
 
-        tabla.getColumns().addAll(codigoColumn, descripcionColumn, precioColumn, stockActualColumn, stockMinimoColumn);
+
+        tabla.getColumns().addAll(codigoColumn, descripcionColumn, precioColumn, stockActualColumn, stockMinimoColumn,estadoColumn);
         tabla.setItems(productosObservableList);
 
 
@@ -81,7 +84,7 @@ public class Principal extends Application {
         codigo_modificar.setPromptText("Codigo de producto");
 
         TextField existencias_agregar = new TextField();
-        existencias_agregar.setPromptText("Existencias a agregar");
+        existencias_agregar.setPromptText("Existencias nuevas");
         Button boton_agregar_existencias = new Button("Agregar existencias");
         boton_agregar_existencias.setOnAction(actionEvent -> {
             int codigo_producto = Integer.parseInt(codigo_modificar.getText());
@@ -90,6 +93,23 @@ public class Principal extends Application {
                 almacen_principal.agregarExistencias(codigo_producto,nuevo_ingreso);
                 codigo_modificar.clear();
                 existencias_agregar.clear();
+                almacen_principal.calcularExistencias(codigo_producto);
+                guardarAlmacen(almacen_principal);
+                productosObservableList.setAll(almacen_principal.listarProductos());
+            }
+            else {
+                System.out.println("El producto no esta en el almacen.");
+            }
+        });
+        Button boton_sacar_existencias = new Button("Sacar existencias");
+        boton_sacar_existencias.setOnAction(actionEvent -> {
+            int codigo_producto = Integer.parseInt(codigo_modificar.getText());
+            if (almacen_principal.estaProducto(codigo_producto)){
+                int nuevo_ingreso = Integer.parseInt(existencias_agregar.getText());
+                almacen_principal.sacarExistencias(codigo_producto,nuevo_ingreso);
+                codigo_modificar.clear();
+                existencias_agregar.clear();
+                almacen_principal.calcularExistencias(codigo_producto);
                 guardarAlmacen(almacen_principal);
                 productosObservableList.setAll(almacen_principal.listarProductos());
             }
@@ -110,13 +130,14 @@ public class Principal extends Application {
             }
         });
 
-        formularios_modificar.getChildren().addAll(codigo_modificar,existencias_agregar,boton_agregar_existencias,boton_eliminar_producto);
+        formularios_modificar.getChildren().addAll(codigo_modificar,existencias_agregar,boton_agregar_existencias,boton_sacar_existencias,boton_eliminar_producto);
 
 
 
         Button boton_agregar = new Button("Agregar Producto");
         boton_agregar.setOnAction(actionEvent -> {
             almacen_principal.agregarProducto(Integer.parseInt(codigo.getText()),descripcion.getText(),Integer.parseInt(precio_unitario.getText()),Integer.parseInt(stock_actual.getText()),Integer.parseInt(stock_minimo.getText()));
+            almacen_principal.calcularExistencias(Integer.parseInt(codigo.getText()));
             codigo.clear();
             descripcion.clear();
             precio_unitario.clear();
@@ -125,15 +146,8 @@ public class Principal extends Application {
             guardarAlmacen(almacen_principal);
             productosObservableList.setAll(almacen_principal.listarProductos());
         });
-        Button boton_imprimir = new Button("Actualizar Productos");
-        boton_imprimir.setOnAction(actionEvent -> {
-            ArrayList<Producto> listado_productos = almacen_principal.listarProductos();
-            for (Producto p : listado_productos){
-                System.out.println("Codigo " + p.getCodigo() + " Descripcion:" + p.getDescripcion() + " Precio Unitario: " + p.getPrecio_unitario() + " Stock Actual: " + p.getStock_actual() + " Stock minimo: " + p.getStock_minimo());
-            }
+        Button boton_imprimir = new Button("Volver al Menu");
 
-
-        });
 
         formularios.getChildren().addAll(codigo,descripcion,precio_unitario,stock_actual,stock_minimo,boton_agregar,boton_imprimir);
 
@@ -144,7 +158,8 @@ public class Principal extends Application {
 
 
 
-        // Escena del menu
+        // MENU
+
         HBox hbox = new HBox();
 
         StackPane panel1 = new StackPane();
@@ -192,6 +207,10 @@ public class Principal extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Administrador");
         primaryStage.show();
+
+        boton_imprimir.setOnAction(actionEvent -> {
+            primaryStage.setScene(scene);
+        });
 
 
 
