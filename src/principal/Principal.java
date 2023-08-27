@@ -4,6 +4,8 @@ import Ventas.AlmacenVentas;
 import Ventas.ProductoVenta;
 import Ventas.Venta;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -14,10 +16,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import pagos.Credito;
+import pagos.Debito;
+import pagos.Efectivo;
 import productos.Almacen;
 import productos.Producto;
 
 import java.io.*;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -29,6 +37,10 @@ public class Principal extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.DOWN);
+
+
         primaryStage.setMinHeight(800);
         primaryStage.setMinWidth(1200);
 
@@ -44,32 +56,42 @@ public class Principal extends Application {
         HBox producto_form = new HBox();
         TextField venta_codigo = new TextField();
         TextField venta_cantidad = new TextField();
+        Label controles = new Label("Controles de productos: ");
+        controles.getStyleClass().add("texto_venta");
         venta_codigo.setPromptText("Codigo de producto");
         venta_cantidad.setPromptText("Cantidad");
         Label precio_final = new Label("El precio final es: ");
+        precio_final.getStyleClass().add("texto");
         Button boton_agregar_carrito = new Button("Agregar al carrito");
         boton_agregar_carrito.getStyleClass().add("boton_mini");
         boton_agregar_carrito.setOnAction(actionEvent -> {
             int codigo_producto = Integer.parseInt(venta_codigo.getText());
-            if (almacen_principal.estaProducto(codigo_producto)) {
-                venta_actual.get().agregarCarrito(almacen_principal.buscarProducto(codigo_producto), Integer.parseInt(venta_cantidad.getText()));
+            int cantidad_pedida = Integer.parseInt(venta_cantidad.getText());
+
+            if (almacen_principal.estaProducto(codigo_producto) && almacen_principal.haySuficiente(codigo_producto,cantidad_pedida)) {
+                venta_actual.get().agregarCarrito(almacen_principal.buscarProducto(codigo_producto),cantidad_pedida );
                 carritoObservableList.setAll(venta_actual.get().getCarrito());
                 venta_codigo.clear();
                 venta_cantidad.clear();
                 precio_final.setText("El precio final es: " + venta_actual.get().getTotal());
             }
+            else {
+                System.out.println("El producto no esta o no hay suficiente stock.");
+            }
         });
+
+
 
         producto_form.getChildren().addAll(venta_codigo,venta_cantidad,boton_agregar_carrito);
         producto_form.setSpacing(15);
 
 
         TableView<ProductoVenta> producto_tabla = new TableView<>();
-        TableColumn<ProductoVenta,Integer> codigo_ventaColumn = new TableColumn<>("Codigo");
-        TableColumn<ProductoVenta,String> descripcion_ventaColumn = new TableColumn<>("Descripcion");
-        TableColumn<ProductoVenta,Integer> precio_unitario_ventaColumn = new TableColumn<>("Precio Unitario");
-        TableColumn<ProductoVenta,Integer> cantidad_ventaColumn = new TableColumn<>("Cantidad");
-        TableColumn<ProductoVenta,Integer>  total_ventaColumn = new TableColumn<>("Total");
+        TableColumn<ProductoVenta,Integer> codigo_ventaColumn = new TableColumn<>("Codigo");codigo_ventaColumn.setPrefWidth(100);
+        TableColumn<ProductoVenta,String> descripcion_ventaColumn = new TableColumn<>("Descripcion");descripcion_ventaColumn.setPrefWidth(300);
+        TableColumn<ProductoVenta,Integer> precio_unitario_ventaColumn = new TableColumn<>("Precio Unitario");precio_unitario_ventaColumn.setPrefWidth(100);
+        TableColumn<ProductoVenta,Integer> cantidad_ventaColumn = new TableColumn<>("Cantidad");cantidad_ventaColumn.setPrefWidth(100);
+        TableColumn<ProductoVenta,Integer>  total_ventaColumn = new TableColumn<>("Total");total_ventaColumn.setPrefWidth(100);
         codigo_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("codigo"));
         descripcion_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
         precio_unitario_ventaColumn.setCellValueFactory(new PropertyValueFactory<>("precio_unitario"));
@@ -80,7 +102,8 @@ public class Principal extends Application {
 
 
 
-        VBox producto_box = new VBox(producto_form,producto_tabla,precio_final);
+        VBox producto_box = new VBox(controles,producto_form,producto_tabla,precio_final);
+        producto_box.setStyle("-fx-padding: 0 0 0 20px;");
         VBox cliente_form = new VBox();
 
         TextField cuil_cliente = new TextField();
@@ -88,10 +111,30 @@ public class Principal extends Application {
         cuil_cliente.setMaxWidth(150);
         Button finalizar_venta = new Button("Finalizar Venta");
         finalizar_venta.getStyleClass().add("boton_mini");
-        cliente_form.getChildren().addAll(cuil_cliente, finalizar_venta);
         cliente_form.setSpacing(30);
         cliente_form.setAlignment(Pos.CENTER);
+        Label medio_etiqueta = new Label("Medio de pago");
+        ObservableList<String> options = FXCollections.observableArrayList(
+                "Efectivo", "Debito", "Credito 2 cuotas", "Credito 3 cuotas", "Credito 6 cuotas");
+        ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox.valueProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (Objects.equals(newValue, "Efectivo"))
+                    precio_final.setText("El precio con el descuento en efectivo es de $" + venta_actual.get().getTotal() * 0.9);
+                else if (Objects.equals(newValue, "Debito"))
+                    precio_final.setText("El precio final con debito es: $" + venta_actual.get().getTotal());
+                else if (Objects.equals(newValue,"Credito 2 cuotas"))
+                    precio_final.setText("Cada una de las 2 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.06) / 2) + " para un total de $" + venta_actual.get().getTotal()*1.06) ;
+                else if (Objects.equals(newValue,"Credito 3 cuotas"))
+                    precio_final.setText("Cada una de las 3 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.12) / 3) + " para un total de $" + venta_actual.get().getTotal()*1.12);
+                else if (Objects.equals(newValue,"Credito 6 cuotas"))
+                    precio_final.setText("Cada una de las 6 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.20) / 6) + " para un total de $" + venta_actual.get().getTotal()*1.20);
 
+            }
+            });
+
+        cliente_form.getChildren().addAll(cuil_cliente,medio_etiqueta,comboBox, finalizar_venta);
 
 
         HBox venta_box = new HBox(producto_box,cliente_form);
@@ -105,8 +148,39 @@ public class Principal extends Application {
             if (!cuil_cliente.getText().isEmpty()){
                 int cuil_cliente_venta = Integer.parseInt(cuil_cliente.getText());
                 venta_actual.get().setCuil_cliente(cuil_cliente_venta);
+                switch (comboBox.getValue()){
+                    case "Efectivo":
+                        Efectivo pago_actual = new Efectivo(venta_actual.get().getTotal());
+                        pago_actual.CalcularCosto();
+                        venta_actual.get().setMedio_pago(pago_actual);
+                        break;
+                    case "Debito":
+                        Debito pago_actual_debito = new Debito(venta_actual.get().getTotal());
+                        pago_actual_debito.CalcularCosto();
+                        venta_actual.get().setMedio_pago(pago_actual_debito);
+                        break;
+                    case "Credito 2 cuotas":
+                        Credito pago_actual_credito2 = new Credito(venta_actual.get().getTotal(),2);
+                        pago_actual_credito2.CalcularCosto();
+                        venta_actual.get().setMedio_pago(pago_actual_credito2);
+                        break;
+                    case "Credito 3 cuotas":
+                        Credito pago_actual_credito3 = new Credito(venta_actual.get().getTotal(),3);
+                        pago_actual_credito3.CalcularCosto();
+                        venta_actual.get().setMedio_pago(pago_actual_credito3);
+                        break;
+                    case "Credito 6 cuotas":
+                        Credito pago_actual_credito6 = new Credito(venta_actual.get().getTotal(),6);
+                        pago_actual_credito6.CalcularCosto();
+                        venta_actual.get().setMedio_pago(pago_actual_credito6);
+                        break;
+                }
+
                 almacen_ventas.guardarVenta(venta_actual.get());
                 guardarAlmacenVentas(almacen_ventas);
+
+
+
                 venta_actual.set(new Venta());
                 carritoObservableList.setAll(venta_actual.get().getCarrito());
                 ventasObservableList.setAll(almacen_ventas.recuperarVentas());
@@ -120,26 +194,27 @@ public class Principal extends Application {
 
         VBox historial = new VBox();
         TableView tabla_historial = new TableView<>();
+        Label historial_texto = new Label("Ultimas ventas");
+        historial_texto.getStyleClass().add("texto");
         TableColumn<Venta,Integer> codigo_hisColumn = new TableColumn<>("Codigo");
         TableColumn<Venta,Integer> cuil_cliente_histColumn = new TableColumn<>("Cliente");
         TableColumn<Venta,Integer> total_histColumn = new TableColumn<>("Total");
-        tabla_historial.getColumns().addAll(codigo_hisColumn,cuil_cliente_histColumn,total_histColumn);
+        TableColumn<Venta,Double> precio_finalColumn = new TableColumn<>("Precio Final");
+        TableColumn<Venta,String> metodo_pagohistColumn = new TableColumn<>("Metodo de pago");
+        tabla_historial.getColumns().addAll(codigo_hisColumn,cuil_cliente_histColumn,total_histColumn,precio_finalColumn,metodo_pagohistColumn);
 
         codigo_hisColumn.setCellValueFactory(new PropertyValueFactory<>("numero_venta"));
         cuil_cliente_histColumn.setCellValueFactory(new PropertyValueFactory<>("cuil_cliente"));
         total_histColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
+        precio_finalColumn.setCellValueFactory(new PropertyValueFactory<>("Precio_final"));
+        metodo_pagohistColumn.setCellValueFactory(new PropertyValueFactory<>("Descripcion_metodo"));
 
         tabla_historial.setItems(ventasObservableList);
-        Button imprimirhistorial = new Button("Imprimir historial");
-        imprimirhistorial.setOnAction(actionEvent -> {
-            for (Venta ventita : almacen_ventas.recuperarVentas()){
-                System.out.println(ventita.getCuil_cliente());
-                System.out.println(ventita.getTotal());
-                System.out.println(ventita.getNumero_venta());
-            }
-        });
 
-        historial.getChildren().addAll(tabla_historial,imprimirhistorial);
+
+        historial.getChildren().addAll(historial_texto,tabla_historial);
+        historial.setAlignment(Pos.TOP_CENTER);
+        historial.setSpacing(40);
         Scene historia = new Scene(historial,1200,800);
 
 

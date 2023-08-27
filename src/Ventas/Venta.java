@@ -1,5 +1,7 @@
 package Ventas;
 
+import pagos.Credito;
+import pagos.Pago;
 import productos.Producto;
 
 import java.io.Serializable;
@@ -9,10 +11,27 @@ import java.util.HashMap;
 public class Venta implements Serializable {
     ArrayList<ProductoVenta> carrito = new ArrayList<>();
     int total;
+    double Precio_final;
+
+    public void setMedio_pago(Pago medio_pago) {
+        this.medio_pago = medio_pago;
+    }
+
+    public double getPrecio_final() {
+        return medio_pago.getPrecio_final();
+    }
+
+    public String getDescripcion_metodo(){
+        return medio_pago.getDescripcion_metodo();
+    }
+
+    Pago medio_pago;
 
     public int getCuil_cliente() {
         return cuil_cliente;
     }
+
+
 
     public void setCuil_cliente(int cuil_cliente) {
         this.cuil_cliente = cuil_cliente;
@@ -50,4 +69,6 @@ public class Venta implements Serializable {
     public int getTotal() {
         return total;
     }
+
+
 }
