@@ -51,16 +51,19 @@ public class Principal extends Application {
         ObservableList<ProductoVenta> carritoObservableList = FXCollections.observableArrayList(venta_actual.get().getCarrito());
         ObservableList<Venta> ventasObservableList = FXCollections.observableArrayList(almacen_ventas.recuperarVentas());
 
-
+        ObservableList<String> options = FXCollections.observableArrayList(
+                "Efectivo", "Debito", "Credito 2 cuotas", "Credito 3 cuotas", "Credito 6 cuotas");
+        ComboBox<String> comboBox = new ComboBox<>(options);
+        comboBox.setValue("Efectivo");
         // Nueva Venta
         HBox producto_form = new HBox();
-        TextField venta_codigo = new TextField();
-        TextField venta_cantidad = new TextField();
+        TextField venta_codigo = new TextField();venta_codigo.getStyleClass().add("inputs");
+        TextField venta_cantidad = new TextField();venta_cantidad.getStyleClass().add("inputs");
         Label controles = new Label("Controles de productos: ");
         controles.getStyleClass().add("texto_venta");
         venta_codigo.setPromptText("Codigo de producto");
         venta_cantidad.setPromptText("Cantidad");
-        Label precio_final = new Label("El precio final es: ");
+        Label precio_final = new Label();
         precio_final.getStyleClass().add("texto");
         Button boton_agregar_carrito = new Button("Agregar al carrito");
         boton_agregar_carrito.getStyleClass().add("boton_mini");
@@ -73,7 +76,20 @@ public class Principal extends Application {
                 carritoObservableList.setAll(venta_actual.get().getCarrito());
                 venta_codigo.clear();
                 venta_cantidad.clear();
-                precio_final.setText("El precio final es: " + venta_actual.get().getTotal());
+                precio_final.setText("El precio final es: $" + venta_actual.get().getTotal());
+                switch (comboBox.getValue()) {
+                    case "Efectivo" ->
+                            precio_final.setText("El precio con el descuento en efectivo es de $" + venta_actual.get().getTotal() * 0.9);
+                    case "Debito" ->
+                            precio_final.setText("El precio final con debito es: $" + venta_actual.get().getTotal());
+                    case "Credito 2 cuotas" ->
+                            precio_final.setText("Cada una de las 2 cuotas costara $" + df.format((venta_actual.get().getTotal() * 1.06) / 2) + " para un total de $" + df.format(venta_actual.get().getTotal() * 1.06));
+                    case "Credito 3 cuotas" ->
+                            precio_final.setText("Cada una de las 3 cuotas costara $" + df.format((venta_actual.get().getTotal() * 1.12) / 3) + " para un total de $" + df.format(venta_actual.get().getTotal() * 1.12));
+                    case "Credito 6 cuotas" ->
+                            precio_final.setText("Cada una de las 6 cuotas costara $" + df.format((venta_actual.get().getTotal() * 1.20) / 6) + " para un total de $" + df.format(venta_actual.get().getTotal() * 1.20));
+                }
+
             }
             else {
                 System.out.println("El producto no esta o no hay suficiente stock.");
@@ -101,12 +117,13 @@ public class Principal extends Application {
         producto_tabla.getColumns().addAll(codigo_ventaColumn,descripcion_ventaColumn,precio_unitario_ventaColumn,cantidad_ventaColumn,total_ventaColumn);
 
 
-
         VBox producto_box = new VBox(controles,producto_form,producto_tabla,precio_final);
-        producto_box.setStyle("-fx-padding: 0 0 0 20px;");
+        producto_box.getStyleClass().add("venta_izquierdo");
+        producto_box.setStyle("-fx-padding: 0 20px 0 20px;");
         VBox cliente_form = new VBox();
-
+        cliente_form.getStyleClass().add("venta_derecho");
         TextField cuil_cliente = new TextField();
+        cuil_cliente.getStyleClass().add("input_cliente");
         cuil_cliente.setPromptText("Cuil Cliente");
         cuil_cliente.setMaxWidth(150);
         Button finalizar_venta = new Button("Finalizar Venta");
@@ -114,9 +131,8 @@ public class Principal extends Application {
         cliente_form.setSpacing(30);
         cliente_form.setAlignment(Pos.CENTER);
         Label medio_etiqueta = new Label("Medio de pago");
-        ObservableList<String> options = FXCollections.observableArrayList(
-                "Efectivo", "Debito", "Credito 2 cuotas", "Credito 3 cuotas", "Credito 6 cuotas");
-        ComboBox<String> comboBox = new ComboBox<>(options);
+        medio_etiqueta.getStyleClass().add("medio-pago");
+
         comboBox.valueProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -125,11 +141,11 @@ public class Principal extends Application {
                 else if (Objects.equals(newValue, "Debito"))
                     precio_final.setText("El precio final con debito es: $" + venta_actual.get().getTotal());
                 else if (Objects.equals(newValue,"Credito 2 cuotas"))
-                    precio_final.setText("Cada una de las 2 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.06) / 2) + " para un total de $" + venta_actual.get().getTotal()*1.06) ;
+                    precio_final.setText("Cada una de las 2 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.06) / 2) + " para un total de $" + df.format(venta_actual.get().getTotal()*1.06)) ;
                 else if (Objects.equals(newValue,"Credito 3 cuotas"))
-                    precio_final.setText("Cada una de las 3 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.12) / 3) + " para un total de $" + venta_actual.get().getTotal()*1.12);
+                    precio_final.setText("Cada una de las 3 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.12) / 3) + " para un total de $" + df.format(venta_actual.get().getTotal()*1.12));
                 else if (Objects.equals(newValue,"Credito 6 cuotas"))
-                    precio_final.setText("Cada una de las 6 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.20) / 6) + " para un total de $" + venta_actual.get().getTotal()*1.20);
+                    precio_final.setText("Cada una de las 6 cuotas costara $" + df.format((venta_actual.get().getTotal()*1.20) / 6) + " para un total de $" + df.format(venta_actual.get().getTotal()*1.20));
 
             }
             });
@@ -185,7 +201,7 @@ public class Principal extends Application {
                 carritoObservableList.setAll(venta_actual.get().getCarrito());
                 ventasObservableList.setAll(almacen_ventas.recuperarVentas());
                 cuil_cliente.clear();
-                precio_final.setText("El precio final es: " + venta_actual.get().getTotal());
+                precio_final.setText("");
             }
         });
 
@@ -215,6 +231,7 @@ public class Principal extends Application {
         historial.getChildren().addAll(historial_texto,tabla_historial);
         historial.setAlignment(Pos.TOP_CENTER);
         historial.setSpacing(40);
+        historial.getStyleClass().add("formulario_stock_big");
         Scene historia = new Scene(historial,1200,800);
 
 
@@ -246,9 +263,9 @@ public class Principal extends Application {
         tabla.setItems(productosObservableList);
 
 
-        HBox formularios = new HBox();
-        formularios.getStyleClass().add("formulario");
-        formularios.setSpacing(30);
+        HBox formularios_agregar_stock = new HBox();
+        formularios_agregar_stock.getStyleClass().add("formulario");
+        formularios_agregar_stock.setSpacing(30);
 
         TextField codigo = new TextField();
         codigo.setPromptText("Codigo de producto");
@@ -275,6 +292,7 @@ public class Principal extends Application {
         TextField existencias_agregar = new TextField();
         existencias_agregar.setPromptText("Existencias nuevas");
         Button boton_agregar_existencias = new Button("Agregar existencias");
+        boton_agregar_existencias.getStyleClass().add("boton_mini");
         boton_agregar_existencias.setOnAction(actionEvent -> {
             int codigo_producto = Integer.parseInt(codigo_modificar.getText());
             if (almacen_principal.estaProducto(codigo_producto)){
@@ -291,6 +309,7 @@ public class Principal extends Application {
             }
         });
         Button boton_sacar_existencias = new Button("Sacar existencias");
+        boton_sacar_existencias.getStyleClass().add("boton_mini");
         boton_sacar_existencias.setOnAction(actionEvent -> {
             int codigo_producto = Integer.parseInt(codigo_modificar.getText());
             if (almacen_principal.estaProducto(codigo_producto)){
@@ -307,6 +326,7 @@ public class Principal extends Application {
             }
         });
         Button boton_eliminar_producto = new Button("Eliminar Producto");
+        boton_eliminar_producto.getStyleClass().add("boton_mini");
         boton_eliminar_producto.setOnAction(actionEvent -> {
             int codigo_producto = Integer.parseInt(codigo_modificar.getText());
             if (almacen_principal.estaProducto(codigo_producto)){
@@ -318,12 +338,14 @@ public class Principal extends Application {
                 System.out.println("El producto no esta en el almacen.");
             }
         });
-
+        formularios_agregar_stock.setSpacing(5);
+        formularios_modificar.setSpacing(5);
         formularios_modificar.getChildren().addAll(codigo_modificar,existencias_agregar,boton_agregar_existencias,boton_sacar_existencias,boton_eliminar_producto);
-
+        formularios_modificar.getStyleClass().add("formulario_stock");
 
 
         Button boton_agregar = new Button("Agregar Producto");
+        boton_agregar.getStyleClass().add("boton_mini");
         boton_agregar.setOnAction(actionEvent -> {
             almacen_principal.agregarProducto(Integer.parseInt(codigo.getText()),descripcion.getText(),Integer.parseInt(precio_unitario.getText()),Integer.parseInt(stock_actual.getText()),Integer.parseInt(stock_minimo.getText()));
             almacen_principal.calcularExistencias(Integer.parseInt(codigo.getText()));
@@ -338,12 +360,13 @@ public class Principal extends Application {
         Button boton_imprimir = new Button("Volver al Menu");
 
 
-        formularios.getChildren().addAll(codigo,descripcion,precio_unitario,stock_actual,stock_minimo,boton_agregar,boton_imprimir);
+        formularios_agregar_stock.getChildren().addAll(codigo,descripcion,precio_unitario,stock_actual,stock_minimo,boton_agregar,boton_imprimir);
+        formularios_agregar_stock.getStyleClass().add("formulario_stock");
+        VBox formularios = new VBox(formularios_agregar_stock,formularios_modificar);
 
-        stock_stack.getChildren().addAll(formularios,formularios_modificar,tabla);
-
+        stock_stack.getChildren().addAll(formularios,tabla);
+        stock_stack.getStyleClass().add("formulario_stock_big");
         Scene stock_scene = new Scene(stock_stack,1200,800);
-
 
 
 

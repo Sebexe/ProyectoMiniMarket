@@ -5,43 +5,69 @@
 
 
 .panel1 {
-    -fx-background-color: #1d3557;
+    -fx-background-color: #002626;
 }
 .panel2 {
-    -fx-background-color: #ffffff;
+    -fx-background-color: #ddf2ff;
 }
 
 .boton {
-    -fx-font-size: 24px;
-    -fx-background-color: #457b9d;
-    -fx-text-fill: white;
-    -fx-font-family: "MiFuentePersonalizada";
+    -fx-font-size: 36px;
+    -fx-background-color: #326273;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Cambria";
+}
+
+.boton:hover{
+    -fx-border-color: #5C9EAD;
+    -fx-border-style: solid;
+    -fx-border-radius: 1%;
+    -fx-border-width: 4px;
+}
+
+.venta_izquierdo{
+    -fx-background-color: #326273;
+}
+
+.venta_derecho {
+    -fx-background-color: #5C9EAD;
 }
 
 
 .texto {
     -fx-font-size: 24px;
+    -fx-text-fill: #FFFFFF;
     -fx-alignment: center;
-    -fx-padding: 0px 0px 0px 20px;
+    -fx-padding: 0px 0px 0px 10%;
 }
 
 .texto_venta {
     -fx-font-size: 24px;
     -fx-alignment: center;
+    -fx-text-fill: #FFFFFF;
     -fx-padding: 10px 0px 0px 0px;
+    -fx-background-radius: 0; /* Hace que el fondo no tenga esquinas redondeadas */
+    -fx-background-size: 100% auto; /* Ancho del fondo al 100% */
 }
 .boton_mini {
     -fx-font-size: 16px;
     -fx-text-fill: black;
-    -fx-background-color: #bde0fe;
+    -fx-background-color: #FEFEE3;
     -fx-font-family: "Segoe UI";
 }
 
-.boton:hover{
-    -fx-border-color: #3a86ff;
-    -fx-border-style: solid;
-    -fx-border-radius: 3px;
+.inputs {
+    -fx-pref-height: 32px;
 }
+.input_cliente {
+    -fx-pref-height: 40px;
+    -fx-pref-width: 300px;
+}
+
+.medio-pago {
+    -fx-font-size: 24px;
+}
+
 
 .boton_mini:hover{
     -fx-border-color: #3a86ff;
@@ -51,4 +77,14 @@
 
 .formulario {
     fx-margin-top: 10px;
+}
+
+.formulario_stock {
+    -fx-background-color: #5C9EAD;
+    -fx-padding: 10px 0 10px 5px ;
+
+}
+
+.formulario_stock_big {
+    -fx-background-color: #002626;
 }
