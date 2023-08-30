@@ -52,13 +52,19 @@
 .boton_mini {
     -fx-font-size: 16px;
     -fx-text-fill: black;
-    -fx-background-color: #FEFEE3;
+    -fx-background-color: #ffffff;
     -fx-font-family: "Segoe UI";
 }
 
 .inputs {
     -fx-pref-height: 32px;
 }
+
+.inputs .prompt-text {
+    -fx-text-fill: black; /* Cambiar el color del texto del promptText */
+}
+
+
 .input_cliente {
     -fx-pref-height: 40px;
     -fx-pref-width: 300px;
@@ -87,4 +93,12 @@
 
 .formulario_stock_big {
     -fx-background-color: #002626;
+}
+
+
+.tablita {
+    -fx-pref-height: 600px;
+    -fx-pref-width: 560px;
+    -fx-font-size: 26px;
+
 }

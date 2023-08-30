@@ -103,6 +103,7 @@ public class Principal extends Application {
 
 
         TableView<ProductoVenta> producto_tabla = new TableView<>();
+
         TableColumn<ProductoVenta,Integer> codigo_ventaColumn = new TableColumn<>("Codigo");codigo_ventaColumn.setPrefWidth(100);
         TableColumn<ProductoVenta,String> descripcion_ventaColumn = new TableColumn<>("Descripcion");descripcion_ventaColumn.setPrefWidth(300);
         TableColumn<ProductoVenta,Integer> precio_unitario_ventaColumn = new TableColumn<>("Precio Unitario");precio_unitario_ventaColumn.setPrefWidth(100);
@@ -210,6 +211,7 @@ public class Principal extends Application {
 
         VBox historial = new VBox();
         TableView tabla_historial = new TableView<>();
+        tabla_historial.getStyleClass().add("tablita");
         Label historial_texto = new Label("Ultimas ventas");
         historial_texto.getStyleClass().add("texto");
         TableColumn<Venta,Integer> codigo_hisColumn = new TableColumn<>("Codigo");
@@ -219,11 +221,11 @@ public class Principal extends Application {
         TableColumn<Venta,String> metodo_pagohistColumn = new TableColumn<>("Metodo de pago");
         tabla_historial.getColumns().addAll(codigo_hisColumn,cuil_cliente_histColumn,total_histColumn,precio_finalColumn,metodo_pagohistColumn);
 
-        codigo_hisColumn.setCellValueFactory(new PropertyValueFactory<>("numero_venta"));
-        cuil_cliente_histColumn.setCellValueFactory(new PropertyValueFactory<>("cuil_cliente"));
-        total_histColumn.setCellValueFactory(new PropertyValueFactory<>("total"));
-        precio_finalColumn.setCellValueFactory(new PropertyValueFactory<>("Precio_final"));
-        metodo_pagohistColumn.setCellValueFactory(new PropertyValueFactory<>("Descripcion_metodo"));
+        codigo_hisColumn.setCellValueFactory(new PropertyValueFactory<>("numero_venta"));codigo_hisColumn.setPrefWidth(100);
+        cuil_cliente_histColumn.setCellValueFactory(new PropertyValueFactory<>("cuil_cliente"));cuil_cliente.setPrefWidth(350);
+        total_histColumn.setCellValueFactory(new PropertyValueFactory<>("total"));total_histColumn.setPrefWidth(250);
+        precio_finalColumn.setCellValueFactory(new PropertyValueFactory<>("Precio_final"));precio_finalColumn.setPrefWidth(250);
+        metodo_pagohistColumn.setCellValueFactory(new PropertyValueFactory<>("Descripcion_metodo"));metodo_pagohistColumn.setPrefWidth(300);
 
         tabla_historial.setItems(ventasObservableList);
 
@@ -244,18 +246,18 @@ public class Principal extends Application {
         stock_stack.setSpacing(50);
 
         TableView<Producto> tabla = new TableView<>();
-
+        tabla.getStyleClass().add("tablita");
         TableColumn<Producto, Integer> codigoColumn = new TableColumn<>("Código");
         TableColumn<Producto, String> descripcionColumn = new TableColumn<>("Descripción");
         TableColumn<Producto, Integer> precioColumn = new TableColumn<>("Precio Unitario");
         TableColumn<Producto, Integer> stockActualColumn = new TableColumn<>("Stock Actual");
         TableColumn<Producto, Integer> stockMinimoColumn = new TableColumn<>("Stock Mínimo");
         TableColumn<Producto, String> estadoColumn = new TableColumn<>("Estado");
-        codigoColumn.setCellValueFactory(new PropertyValueFactory<>("codigo"));codigoColumn.setPrefWidth(50);
+        codigoColumn.setCellValueFactory(new PropertyValueFactory<>("codigo"));codigoColumn.setPrefWidth(150);
         descripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));descripcionColumn.setPrefWidth(200);
-        precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio_unitario"));precioColumn.setPrefWidth(100);
-        stockActualColumn.setCellValueFactory(new PropertyValueFactory<>("stock_actual"));stockActualColumn.setPrefWidth(100);
-        stockMinimoColumn.setCellValueFactory(new PropertyValueFactory<>("stock_minimo"));stockMinimoColumn.setPrefWidth(100);
+        precioColumn.setCellValueFactory(new PropertyValueFactory<>("precio_unitario"));precioColumn.setPrefWidth(200);
+        stockActualColumn.setCellValueFactory(new PropertyValueFactory<>("stock_actual"));stockActualColumn.setPrefWidth(200);
+        stockMinimoColumn.setCellValueFactory(new PropertyValueFactory<>("stock_minimo"));stockMinimoColumn.setPrefWidth(200);
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
 
 
@@ -269,18 +271,23 @@ public class Principal extends Application {
 
         TextField codigo = new TextField();
         codigo.setPromptText("Codigo de producto");
+        codigo.getStyleClass().add("inputs");
 
         TextField descripcion = new TextField();
         descripcion.setPromptText("Descripcion");
+        descripcion.getStyleClass().add("inputs");
 
         TextField precio_unitario = new TextField();
         precio_unitario.setPromptText("Precio Unitario");
+        precio_unitario.getStyleClass().add("inputs");
 
         TextField stock_actual = new TextField();
         stock_actual.setPromptText("Stock actual");
+        stock_actual.getStyleClass().add("inputs");
 
         TextField stock_minimo = new TextField();
         stock_minimo.setPromptText("Stock minimo");
+        stock_minimo.getStyleClass().add("inputs");
 
         HBox formularios_modificar = new HBox();
         formularios_modificar.getStyleClass().add("formulario");
@@ -288,9 +295,12 @@ public class Principal extends Application {
 
         TextField codigo_modificar = new TextField();
         codigo_modificar.setPromptText("Codigo de producto");
+        codigo_modificar.getStyleClass().add("inputs");
 
         TextField existencias_agregar = new TextField();
         existencias_agregar.setPromptText("Existencias nuevas");
+        existencias_agregar.getStyleClass().add("inputs");
+
         Button boton_agregar_existencias = new Button("Agregar existencias");
         boton_agregar_existencias.getStyleClass().add("boton_mini");
         boton_agregar_existencias.setOnAction(actionEvent -> {

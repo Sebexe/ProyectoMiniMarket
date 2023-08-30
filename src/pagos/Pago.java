@@ -1,6 +1,8 @@
 package pagos;
 
 import java.io.Serializable;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 public class Pago implements Serializable {
     public String getDescripcion_metodo() {
@@ -11,8 +13,13 @@ public class Pago implements Serializable {
     double valor;
     double precio_final;
 
+
+
+
     public Pago(double valor){
         this.valor = valor;
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.DOWN);
     }
     public double getPrecio_final() {
         return precio_final;

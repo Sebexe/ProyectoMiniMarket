@@ -8,6 +8,7 @@ public class Credito extends Pago{
         this.cuotas = cuotas;
     }
 
+
     @Override
     public void CalcularCosto() {
         switch (cuotas) {
@@ -28,5 +29,9 @@ public class Credito extends Pago{
             }
         }
 
+        // Redondear a dos decimales
+        precio_final = Math.round(precio_final * 100.0) / 100.0;
+        c_cuota = Math.round(c_cuota * 100.0) / 100.0;
     }
+
 }
